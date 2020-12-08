@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="./css/index.css">
+    <script src="./lib/react.js"></script>
+    <script src="./lib/reactdom.js"></script>
+    <script src="./lib/babel.js"></script>
+    <script type="text/babel" src="./src/index.jsx"></script>
+</head>
+
+<body>
+    <div id="app"></div>
+    <button onclick="sendMessage()">文件上传</button>
+    <br />
+    <progress max="100" value="70"></progress>
+    <br>
+    <textarea name="txt" id="txt" cols="30" rows="10"></textarea>
+    <script type="text/babel">
+        const ws=new WebSocket("ws://localhost:9501");
+        ws.onmessage=function(message){
+            console.log(message)
+        }
+        function sendMessage(){
+            ws.send("hello");
+        }
+        const container=document.querySelector("#app");
+        ReactDOM.render(
+                <div>
+                    <GamePaint />
+                    <GamePaint /></div>,
+                container
+            );
+    </script>
+</body>
+
+</html>
