@@ -14,11 +14,8 @@
 
 <body>
     <div id="app"></div>
-    <button onclick="sendMessage()">文件上传</button>
-    <br />
-    <progress max="100" value="70"></progress>
     <br>
-    <textarea name="txt" id="txt" cols="30" rows="10"></textarea>
+    <script src="./src/websocket.js"></script>
     <script type="text/babel">
         const ws=new WebSocket("ws://localhost:9501");
         ws.onmessage=function(message){
@@ -28,10 +25,93 @@
             ws.send("hello");
         }
         const container=document.querySelector("#app");
+
+        class App extends React.Component{
+            constructor(props){
+                super(props);
+                this.gamePadA= React.createRef();
+                this.gamePadB=React.createRef();
+                this.onClick=this.onClick.bind(this)
+            }
+            componentDidMount(){
+                const padA=this.gamePadA.current;
+                const padB=this.gamePadB.current;
+                websocket.onmessage=(e)=>{
+                    const {data}=e;
+                    const {type}=data;
+                    console.log(data);
+                }
+                document.onkeydown = (e) => {
+                    //console.log(e);
+                    switch (e.key) {
+                        case 'w':
+                            padA.toStart({
+                                x:0,
+                                y:-1
+                            });
+                            break;
+                        case 'a':
+                            padA.toStart({
+                                x: -1,
+                                y: 0
+                            });
+                            break;
+                        case 's':
+                           padA.toStart({
+                                x: 0,
+                                y: 1
+                            });
+                            break;
+                        case 'd':
+                            padA.toStart({
+                                x: 1,
+                                y: 0
+                            });
+                            break;
+                        case 'ArrowUp':
+                            padB.toStart({
+                                x: 0,
+                                y: -1
+                            });
+                            break;
+                        case 'ArrowLeft':
+                            padB.toStart({
+                                x: -1,
+                                y: 0
+                            });
+                            break;
+                        case 'ArrowDown':
+                            padB.toStart({
+                                x: 0,
+                                y: 1
+                            });
+                            break;
+                        case 'ArrowRight':
+                            padB.toStart({
+                                x: 1,
+                                y: 0
+                            });
+                            break;
+                        default:
+                            break;
+                    }
+                    return false;
+                }
+            }
+            onClick(){
+                websocket.send("hello");
+            }
+            render(){
+
+                return (<div>
+                    <GamePaint ref={this.gamePadA}/>
+                    <GamePaint ref={this.gamePadB}/>
+                    <button onClick={this.onClick}></button>
+                    </div>)
+            }
+        }
         ReactDOM.render(
-                <div>
-                    <GamePaint />
-                    <GamePaint /></div>,
+                <App/>,
                 container
             );
     </script>

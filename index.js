@@ -12,8 +12,21 @@ app.ws.use(
     ctx.websocket.on("message", function (message) {
       console.log(message);
       let data = JSON.stringify({
-        id: Math.ceil(Math.random() * 1000),
-        time: parseInt(new Date() / 1000),
+        type: "action",
+        userData: {
+          data: [],
+          nextDirection: {
+            x: 0,
+            y: 0,
+          },
+        },
+        enemyData: {
+          data: [],
+          nextDirection: {
+            x: 0,
+            y: 0,
+          },
+        },
       });
       ctx.websocket.send(data);
     });
