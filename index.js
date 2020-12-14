@@ -3,6 +3,15 @@ const Koa = require("koa2");
 const route = require("koa-route");
 const websockify = require("koa-websocket");
 const app = websockify(new Koa());
+let wsMap = new Map();
+app.ws.onConnection = (socket, req) => {
+  const key = socket._socket.server._connectionKey;
+  if (!wsMap.has(key)) {
+    wsMap.set(key, socket);
+    socket.send("hello");
+  }
+  console.log(wsMap.size);
+};
 app.ws.use(function (ctx, next) {
   ctx.websocket.send("连接成功");
   return next(ctx);
@@ -10,7 +19,7 @@ app.ws.use(function (ctx, next) {
 app.ws.use(
   route.all("/", function (ctx) {
     ctx.websocket.on("message", function (message) {
-      console.log(message);
+      //console.log(message);
       let data = JSON.stringify({
         type: "action",
         userData: {

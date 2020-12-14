@@ -18,6 +18,7 @@
     <script src="./src/websocket.js"></script>
     <script type="text/babel">
         const ws=new WebSocket("ws://localhost:9501");
+        console.log(ws);
         ws.onmessage=function(message){
             console.log(message)
         }
