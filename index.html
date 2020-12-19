@@ -30,9 +30,15 @@
         class App extends React.Component{
             constructor(props){
                 super(props);
+                this.state={
+                    
+                }
                 this.gamePadA= React.createRef();
                 this.gamePadB=React.createRef();
                 this.onClick=this.onClick.bind(this)
+                this.onMove2Next=this.onMove2Next.bind(this)
+                this.onCatchGift=this.onCatchGift.bind(this)
+                this.passState=this.passState.bind(this)
             }
             componentDidMount(){
                 const padA=this.gamePadA.current;
@@ -102,11 +108,22 @@
             onClick(){
                 websocket.send("hello");
             }
+            onCatchGift(state,gift){
+                this.passState(state,gift)
+            }
+            onMove2Next(state,gift){
+                this.passState(state,gift)
+            }
+            passState(state,gift){
+                this.gamePadB.current.setState(state);
+                this.gamePadB.current.gift=gift;
+                this.gamePadB.current.toStart(state.nextDirection);
+            }
             render(){
 
                 return (<div>
-                    <GamePaint ref={this.gamePadA}/>
-                    <GamePaint ref={this.gamePadB}/>
+                    <GamePaint ref={this.gamePadA} onCatchGift={this.onCatchGift} onMove2Next={this.onMove2Next}/>
+                    <GamePaint ref={this.gamePadB} />
                     <button onClick={this.onClick}></button>
                     </div>)
             }
