@@ -6,7 +6,7 @@ class GamePaint extends React.Component{
         }
         if (props.onCatchGift) {
             this.onCatchGift = props.onCatchGift;
-        }
+        } 
         this.paintData = props.paintData;
         this.state={
             data: [{x:40,y:60},{x:40,y:80},{x:60,y:80}],
@@ -95,11 +95,15 @@ class GamePaint extends React.Component{
                     this.gift
                 )
                 this.setState({
-                    data
+                    data,
+                    score: this.state.score + 1
                 })
                 if (this.onCatchGift) {
                     this.gift = this.geneGift();
-                    this.onCatchGift(this.state, this.gift);
+                    this.onCatchGift({
+                        state: this.state,
+                        gift: this.gift
+                    });
                 }
             }
         }
@@ -151,7 +155,10 @@ class GamePaint extends React.Component{
                     data: this.state.data.slice(1).concat({x:dx.x+dir.direction.x*20,y:dx.y+dir.direction.y*20})
                 }, function(){
                     if (this.onMove2Next) {
-                    this.onMove2Next(this.state, this.gift);
+                        this.onMove2Next({
+                            state: this.state,
+                            gift: this.gift
+                    });
                 }
                 })
                 setTimeout(() => {

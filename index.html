@@ -17,13 +17,10 @@
     <br>
     <script src="./src/websocket.js"></script>
     <script type="text/babel">
-        const ws=new WebSocket("ws://localhost:9501");
-        console.log(ws);
-        ws.onmessage=function(message){
-            console.log(message)
-        }
+        //const ws=new WebSocket("ws://localhost:9501");
+        console.log(websocket);
         function sendMessage(){
-            ws.send("hello");
+            websocket.send("hello");
         }
         const container=document.querySelector("#app");
 
@@ -40,13 +37,29 @@
                 this.onCatchGift=this.onCatchGift.bind(this)
                 this.passState=this.passState.bind(this)
             }
+            sendUserData=(gameData)=>{
+                websocket.send(JSON.stringify({
+                    type:"gameData",
+                    gameData
+                }));
+                console.log('gamedata',gameData)
+            }
+            receivedData=(data)=>{
+                this.passState(...data)
+            }
             componentDidMount(){
                 const padA=this.gamePadA.current;
                 const padB=this.gamePadB.current;
                 websocket.onmessage=(e)=>{
-                    const {data}=e;
-                    const {type}=data;
-                    console.log(data);
+                    const data=JSON.parse(e.data)
+                    const {type}=data
+                    if(type=="gameData"){
+                        let gameData=data.gameData
+                        this.passState(gameData)
+                    }
+                    //console.log(data);
+                    //console.log(type,data);
+                    //this.receivedData(e);
                 }
                 document.onkeydown = (e) => {
                     //console.log(e);
@@ -106,25 +119,51 @@
                 }
             }
             onClick(){
-                websocket.send("hello");
+                const obj={
+                    type:"MSG",
+                    msg:"hello"
+                }
+                websocket.send(JSON.stringify(obj));
+                //console.log("hellow",websocket);
             }
-            onCatchGift(state,gift){
-                this.passState(state,gift)
+            onCatchGift(data){
+                this.passState(data)
             }
-            onMove2Next(state,gift){
-                this.passState(state,gift)
+            onMove2Next(data){
+                this.passState(data)
             }
-            passState(state,gift){
+            passState(data){
+                const {state,gift}=data;
                 this.gamePadB.current.setState(state);
                 this.gamePadB.current.gift=gift;
                 this.gamePadB.current.toStart(state.nextDirection);
             }
+            hostGame=()=>{
+                const cmd={
+                    type:"HOST",
+                    msg:"welcom to my room"
+                }
+                websocket.send(JSON.stringify(cmd))
+            }
+            joinGame=()=>{
+                const cmd={
+                    type:"JOIN",
+                    msg:"I am Iron man"
+                }
+                websocket.send(JSON.stringify(cmd))
+            }
             render(){
 
-                return (<div>
-                    <GamePaint ref={this.gamePadA} onCatchGift={this.onCatchGift} onMove2Next={this.onMove2Next}/>
-                    <GamePaint ref={this.gamePadB} />
-                    <button onClick={this.onClick}></button>
+                return (<div className="snake">
+                    <div className="game-body">
+                        <GamePaint ref={this.gamePadA} onCatchGift={this.sendUserData} onMove2Next={this.sendUserData} />
+                        <GamePaint ref={this.gamePadB} />    
+                    </div>
+                    <br/>
+                    <div className="operation">
+                        <button onClick={this.hostGame}>建立房间</button>
+                        <button onClick={this.hostGame}>加入游戏</button>
+                    </div>
                     </div>)
             }
         }
