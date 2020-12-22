@@ -6,16 +6,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link rel="stylesheet" href="./css/index.css">
+    <link rel="stylesheet" href="./css/button.css">
     <script src="./lib/react.js"></script>
     <script src="./lib/reactdom.js"></script>
     <script src="./lib/babel.js"></script>
     <script type="text/babel" src="./src/index.jsx"></script>
+    <script type="text/babel" src="./src/components/button/button.jsx"></script>
 </head>
 
 <body>
     <div id="app"></div>
     <br>
     <script src="./src/websocket.js"></script>
+    <script src="./src/utils.js"></script>
     <script type="text/babel">
         //const ws=new WebSocket("ws://localhost:9501");
         console.log(websocket);
@@ -28,8 +31,15 @@
             constructor(props){
                 super(props);
                 this.state={
-                    
+                    online:false,
+                    identity:"",
                 }
+                const autoClose = () => {
+                    this.setState({
+                        online: false
+                    })
+                }
+                this.cb = debounce(autoClose, this, 5000);
                 this.gamePadA= React.createRef();
                 this.gamePadB=React.createRef();
                 this.onClick=this.onClick.bind(this)
@@ -42,7 +52,7 @@
                     type:"gameData",
                     gameData
                 }));
-                console.log('gamedata',gameData)
+                //console.log('gamedata',gameData)
             }
             receivedData=(data)=>{
                 this.passState(...data)
@@ -53,12 +63,38 @@
                 websocket.onmessage=(e)=>{
                     const data=JSON.parse(e.data)
                     const {type}=data
-                    if(type=="gameData"){
-                        let gameData=data.gameData
-                        this.passState(gameData)
+                    switch(type){
+                        case "gameData":
+                            let gameData = data.gameData
+                            this.passState(gameData)
+                            break;
+                        case "MOVE":
+                            //console.log("move");
+                            this.passState({dir:data.dir})
+                            break;
+                        case "HOST":
+                            this.setState({
+                                identity:"HOST"
+                            });
+                            break;
+                        case "JOIN":
+                            this.setState({
+                                identity:"JOIN"
+                            })
+                            break;
+                        case "CONNECT":
+                            this.setState({
+                                online:true
+                            });
+                            break;
+                        case "PING":
+                            this.setState({
+                                online:true
+                            },this.cb);
+                            break;
                     }
                     //console.log(data);
-                    //console.log(type,data);
+                    //console.log(type);
                     //this.receivedData(e);
                 }
                 document.onkeydown = (e) => {
@@ -132,11 +168,25 @@
             onMove2Next(data){
                 this.passState(data)
             }
-            passState(data){
-                const {state,gift}=data;
-                this.gamePadB.current.setState(state);
-                this.gamePadB.current.gift=gift;
-                this.gamePadB.current.toStart(state.nextDirection);
+            passState(e){
+                const {state,data,gift, dir}=e;
+                //console.log(state.data)
+                if(state){
+                    this.gamePadB.current.setState(state);
+                    this.gamePadB.current.running = false;
+                    this.gamePadB.current.toStart(state.nextDirection);
+                } 
+                if(data) this.gamePadB.current.data=data;
+                if(gift)this.gamePadB.current.gift=gift;
+                if(dir)this.gamePadB.current.tempDirection=dir;
+                
+            }
+            move=(direction)=>{
+                websocket.send(JSON.stringify({
+                    type:"MOVE",
+                    dir:direction
+                }))
+                //console.log("moved")
             }
             hostGame=()=>{
                 const cmd={
@@ -156,13 +206,28 @@
 
                 return (<div className="snake">
                     <div className="game-body">
-                        <GamePaint ref={this.gamePadA} onCatchGift={this.sendUserData} onMove2Next={this.sendUserData} />
-                        <GamePaint ref={this.gamePadB} />    
+                        <GamePaint ref={this.gamePadA} onCatchGift={this.sendUserData} onMove2Next={this.sendUserData} onMove={this.move}/>
+                        <GamePaint ref={this.gamePadB} slave={true} />    
                     </div>
                     <br/>
                     <div className="operation">
                         <button onClick={this.hostGame}>建立房间</button>
-                        <button onClick={this.hostGame}>加入游戏</button>
+                        <button onClick={this.joinGame}>加入游戏</button>
+                    </div>
+                    <br/>
+                    <div className="status">
+                        <div className="item">
+                            <label>在线：</label>
+                            <div className="block" className={this.state.online?"lime":"gray"}></div>
+                        </div>
+                           
+                        <div className="item">
+                             <label>状态:</label>
+                            <p>{this.state.identity == "HOST" ? "主机" : this.state.identity == "JOIN" ? "从机" : "未开始"}</p>
+                        </div>
+                        <div className="item">
+                            <P5Button text="go gay"/>
+                        </div>
                     </div>
                     </div>)
             }

@@ -8,8 +8,8 @@ class GamePaint extends React.Component{
             this.onCatchGift = props.onCatchGift;
         } 
         this.paintData = props.paintData;
+        this.data=[{x:40,y:60},{x:40,y:80},{x:60,y:80}],
         this.state={
-            data: [{x:40,y:60},{x:40,y:80},{x:60,y:80}],
             score:0,
             nextDirection: { x: 0, y: 1 },
         }
@@ -25,7 +25,7 @@ class GamePaint extends React.Component{
     }
     componentDidMount() {
         this.drawBackground();
-        this.drawData(this.state.data,0,{direction:{x:0,y:0},tailDirection:{x:0,y:0}});
+        this.drawData(this.data,0,{direction:{x:0,y:0},tailDirection:{x:0,y:0}});
         //console.log(board);
     }
     drawBackground() {
@@ -58,7 +58,7 @@ class GamePaint extends React.Component{
             x = 20 * (Math.random() * basewidth | 0);
             y = 20 * (Math.random() * baseheight| 0);
         }
-        while (this.state.data.includes({
+        while (this.data.includes({
             x,y
         }))
         //console.log(x,y)
@@ -73,7 +73,7 @@ class GamePaint extends React.Component{
         board.fillRect(pos.x,pos.y, 20, 20);
     }
     getDirection() {
-        const data = this.state.data;
+        const data = this.data;
         const de1 = data[0];
         const de2 = data[1];
 
@@ -95,13 +95,12 @@ class GamePaint extends React.Component{
                     this.gift
                 )
                 this.setState({
-                    data,
                     score: this.state.score + 1
                 })
+                this.data = data;
                 if (this.onCatchGift) {
                     this.gift = this.geneGift();
                     this.onCatchGift({
-                        state: this.state,
                         gift: this.gift
                     });
                 }
@@ -129,45 +128,53 @@ class GamePaint extends React.Component{
             this.gift = this.geneGift();
             //console.log("fail")
         }
-        if(curDir&&(curDir.x+this.state.nextDirection.x||curDir.y+this.state.nextDirection.y))
-        this.tempDirection = curDir;
+        if (curDir && (curDir.x + this.state.nextDirection.x || curDir.y + this.state.nextDirection.y)) {
+            this.tempDirection = curDir;
+            if (this.props.onMove) {
+                this.props.onMove(curDir);
+            }
+        }
+
         if (this.running) {
             return;
         }
         this.running = true;
         const dir = this.getDirection();
         //console.log(dir);
-        const data = this.state.data;
+        const data = this.data;
         const dx = data[data.length - 1];
         let dis = 2;
-            //console.log(1);
-            const cb = () => {
-                this.drawBackground();
-                this.drawGift(this.gift);
-                this.drawData(this.state.data, dis,dir)
-                dis++;
-                if (dis <= 20) {
-                    requestAnimationFrame(cb);
-                    return;
-                }
+        //console.log(1);
+        const cb = () => {
+            this.drawBackground();
+            this.drawGift(this.gift);
+            this.drawData(this.data, dis, dir)
+            dis++;
+            if (dis <= 20) {
+                requestAnimationFrame(cb);
+                return;
+            }
+                
+            //console.log("slave",this.props.slave)
+            if (!this.props.slave) {
                 this.setState({
                     nextDirection: this.tempDirection,
-                    data: this.state.data.slice(1).concat({x:dx.x+dir.direction.x*20,y:dx.y+dir.direction.y*20})
-                }, function(){
-                    if (this.onMove2Next) {
-                        this.onMove2Next({
-                            state: this.state,
-                            gift: this.gift
+                })
+                this.data = this.data.slice(1).concat({ x: dx.x + dir.direction.x * 20, y: dx.y + dir.direction.y * 20 });
+                if (this.onMove2Next) {
+                    this.onMove2Next({
+                        state: this.state,
+                        data: this.data,
+                        gift: this.gift
                     });
                 }
-                })
                 setTimeout(() => {
                     this.running = false;
                     this.toStart(this.tempDirection)
-                },17)
-                
+                }, 17)
             }
-        requestAnimationFrame(cb)
+        }
+        requestAnimationFrame(cb);
     }
     drawRec() {
         //console.log(this.paintBoard.current);

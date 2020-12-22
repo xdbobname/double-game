@@ -16,6 +16,26 @@
   border-radius: 10px;
   box-shadow: 0 2px 2px black;
 }
+.snake .status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.snake .status .item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+.snake .status .item .block {
+  width: 20px;
+  height: 20px;
+}
+.lime {
+  background-color: lime;
+}
+.gray {
+  background-color: gray;
+}
 .gameArea {
   display: flex;
   flex-direction: column;

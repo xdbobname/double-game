@@ -24,29 +24,43 @@ app.ws.onConnection = (socket, req) => {
     const { type } = gameData;
     switch (type) {
       case clientMESType.HOST:
+        console.log("Host defined");
         allay = socket;
+        socket.send(
+          JSON.stringify({
+            type: serverMESType.HOST,
+          })
+        );
         break;
       case clientMESType.JOIN:
+        console.log("joiner defined");
         enemy = socket;
+        socket.send(
+          JSON.stringify({
+            type: serverMESType.JOIN,
+          })
+        );
         break;
       case clientMESType.MSG:
-        if (socket == allay) {
-          enemy.send(mes);
-        } else {
-          allay.send(mes);
-        }
+        getSocket(socket).send(mes);
         break;
       case clientMESType.gameData:
-        if (socket == allay) {
-          enemy.send(mes);
-        } else {
-          allay.send(mes);
-        }
+        getSocket(socket).send(mes);
+        break;
+      case clientMESType.MOVE:
+        getSocket(socket).send(mes);
         break;
       default:
         break;
     }
   });
+  function getSocket(socket) {
+    if (socket == allay) {
+      return enemy;
+    } else {
+      return allay;
+    }
+  }
   socket.send(
     JSON.stringify({
       type: serverMESType.CONNECT,

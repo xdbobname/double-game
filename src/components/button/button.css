@@ -1,0 +1,35 @@
+.comp {
+  animation: btncg 1000ms ease-in-out 0 infinite forwards;
+  width: 200px;
+  height: 80px;
+}
+.btn {
+  width: 100%;
+  height: 100%;
+  background-color: deepskyblue;
+}
+.text {
+  font-family: "微软雅黑";
+  color: whitesmoke;
+  font-weight: 300;
+  font-size: 12;
+}
+
+@keyframes btncg {
+  from {
+    clip-path: "0% 0%,100% 0%,100% 100%,0% 100%";
+  }
+  30% {
+    clip-path: "5% 0%,100% 0%,98% 100%,0% 100%";
+  }
+  50% {
+    clip-path: "2% 2%,98% 2%,96% 98%,2% 97%";
+  }
+  80% {
+    clip-path: "0% 5%,100% 2%,100% 98%,0% 98%";
+  }
+
+  to {
+    clip-path: "0% 0%,100% 0%,100% 100%,0% 100%";
+  }
+}
